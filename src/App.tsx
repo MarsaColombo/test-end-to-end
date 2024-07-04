@@ -26,6 +26,7 @@ function App() {
   const [currentValue, updateCurrent] = useState<number | undefined>(undefined);
   const [chiffre, updateChiffre] = useState<number | undefined>(undefined);
   const [operation, updateOp] = useState<Operation | undefined>(undefined);
+  const [lastResult, setLastResult] = useState<number | undefined>(undefined);
 
   const handleNumClick = useCallback(
     (num: number) => {
@@ -43,26 +44,53 @@ function App() {
           updateCurrent(myNum);
         }
       }
+      setLastResult(undefined);
     },
     [currentValue, operation, chiffre]
   );
+
+  const handleOperation = (newOperation: Operation) => {
+    if (currentValue !== undefined && chiffre !== undefined && operation) {
+
+      const result = operations[operation].func(currentValue, chiffre);
+      updateCurrent(result);
+      updateChiffre(undefined);
+      setLastResult(result);
+    } else if (lastResult !== undefined) {
+      updateCurrent(lastResult);
+      setLastResult(undefined);
+    }
+    updateOp(newOperation);
+  };
+
+  const handleEqual = () => {
+    if (currentValue !== undefined && chiffre !== undefined && operation) {
+      const result = operations[operation].func(currentValue, chiffre);
+      updateCurrent(result);
+      updateChiffre(undefined);
+      updateOp(undefined);
+      setLastResult(result);
+    }
+  };
 
   return (
     <div className="App">
       <header className="App-header">
         <div className="screen">
-          {`${currentValue || 0} ${
-            currentValue && operation ? operations[operation].symbol : ""
-          } ${
-            currentValue && operation && (chiffre || chiffre === 0)
-              ? chiffre
-              : ""
+          {lastResult !== undefined 
+            ? `${lastResult}`
+            : `${currentValue || 0} ${
+                currentValue && operation ? operations[operation].symbol : ""
+              } ${
+                currentValue && operation && (chiffre || chiffre === 0)
+                  ? chiffre
+                  : ""
+              }`
           }
-        `}
         </div>
         <div>
           {Object.keys(operations).map((opName) => (
-            <button onClick={() => updateOp(opName as Operation)}>
+            <button onClick={() => handleOperation(opName as Operation)}>
               {opName}
             </button>
           ))}
@@ -80,14 +108,7 @@ function App() {
         <button
           className="btnEqual"
           style={{ color: "red" }}
-          onClick={() => {
-            if ((currentValue && operation && chiffre) || chiffre === 0) {
-              const res = operations[operation!].func(currentValue!, chiffre);
-              updateCurrent(res);
-              updateChiffre(undefined);
-              updateOp(undefined);
-            }
-          }}
+          onClick={handleEqual}
         >
           =
         </button>
@@ -97,6 +118,7 @@ function App() {
             updateCurrent(undefined);
             updateChiffre(undefined);
             updateOp(undefined);
+            setLastResult(undefined);
           }}
         >
           C
