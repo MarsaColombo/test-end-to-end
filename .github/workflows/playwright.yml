@@ -2,10 +2,10 @@ name: Playwright Tests
 on:
   push:
     branches:
-      - master
+      - calculatrice
   pull_request:
     branches:
-      - master
+      - calculatrice
 jobs:
   test:
     runs-on: ubuntu-latest
